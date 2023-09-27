@@ -1,11 +1,24 @@
 <script lang="ts">
 	import Gamepad from '$lib/Gamepad.svelte';
-	import type { Layout, State } from '$lib/types.js';
+	import type { Layout, State, GamepadState } from '$lib/types.js';
 	let state: State<(typeof layout.buttons)[number], (typeof layout.axes)[number]>;
 	let layout: Layout;
+	let rawState: GamepadState;
+	const onButtonAUp = () => {
+		console.log('Button A Up!');
+	};
+	const onButtonADown = () => {
+		console.log('Button A Down!');
+	};
 </script>
 
-<Gamepad bind:state bind:layout />
+<Gamepad
+	bind:state
+	bind:layout
+	bind:rawState
+	on:buttonAUp={onButtonAUp}
+	on:buttonADown={onButtonADown}
+/>
 
 {#if state && state.buttons}
 	{#each Object.entries(state.buttons) as button}

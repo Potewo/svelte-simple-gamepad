@@ -1,24 +1,37 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import type { GamepadState, State } from './types.js';
 	import { layout as defaultLayout } from './layout.js';
 
 	// codes below are inspired by https://developer.mozilla.org/ja/docs/Web/API/Gamepad_API/Using_the_Gamepad_API
 	let haveEvents = false;
+	export let interval = 16;
 	export let layout = defaultLayout;
 	export const controllers = new Map<number, Gamepad>();
 	export let rawState: GamepadState = {
 		buttons: [],
 		axes: []
 	};
-	// interface State {
-	// 	buttons: {
-	// 		[key: (typeof layout.buttons)[number]]: GamepadButton;
-	// 	};
-	// 	axes: {
-	// 		[key: (typeof layout.axes)[number]]: number;
-	// 	};
-	// }
+	const dispatch = createEventDispatcher();
+	let oldButtonStates: { [key in (typeof layout.buttons)[number]]: boolean } = {
+		a: false,
+		b: false,
+		x: false,
+		y: false,
+		lb: false,
+		rb: false,
+		lt: false,
+		rt: false,
+		back: false,
+		start: false,
+		ls: false,
+		rs: false,
+		up: false,
+		down: false,
+		left: false,
+		right: false
+	};
 	export let state: State<(typeof layout.buttons)[number], (typeof layout.axes)[number]> = {
 		buttons: {
 			a: { pressed: false, value: 0, touched: false },
@@ -75,7 +88,8 @@
 
 	const add = (gamepad: Gamepad) => {
 		controllers.set(gamepad.index, gamepad);
-		requestAnimationFrame(update);
+		// requestAnimationFrame(update);
+		setInterval(update, interval);
 	};
 
 	const remove = (gamepad: Gamepad) => {
@@ -96,7 +110,14 @@
 			state.buttons[layout.buttons[i]] = gamepad.buttons[i];
 		}
 
+		Object.keys(state.buttons).forEach((key) => {
+			if (oldButtonStates[key] && !state.buttons[key].pressed) {
+				dispatch(`button${key.toUpperCase()}Up`);
+			} else if (!oldButtonStates[key] && state.buttons[key].pressed) {
+				dispatch(`button${key.toUpperCase()}Down`);
+			}
+			oldButtonStates[key] = state.buttons[key].pressed;
+		});
 		// requestAnimationFrame(update);
-		setInterval(update, 30);
 	};
 </script>
