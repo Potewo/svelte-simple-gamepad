@@ -1,4 +1,4 @@
-import type { Layout } from '$lib/types.js';
+import type { Layout } from './types.js';
 export const layout: Layout = {
 	buttons: [
 		'a',
